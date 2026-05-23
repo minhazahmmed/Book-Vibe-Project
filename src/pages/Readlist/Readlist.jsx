@@ -3,10 +3,37 @@ import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
+import { MdDeleteOutline } from "react-icons/md";
 
-const BookListCard = ({ book }) => {
+const BookListCard = ({ book, onRemove }) => {
     const navigate = useNavigate();
     const { bookId, bookName, author, image, category, rating, tags, publisher, totalPages, yearOfPublishing } = book;
+
+    const handleRemove = () => {
+        Swal.fire({
+            title: "Remove this book?",
+            text: `"${bookName}" will be removed from your list.`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#16a34a",
+            cancelButtonColor: "#d1d5db",
+            confirmButtonText: "Yes, remove it",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                onRemove(bookId);
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    title: "Removed successfully",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                });
+            }
+        });
+    };
 
     return (
         <div className="flex gap-5 bg-white border border-gray-200 rounded-2xl p-4 items-center">
@@ -47,6 +74,14 @@ const BookListCard = ({ book }) => {
                     >
                         View Details
                     </button>
+
+                    {/* Remove Button */}
+                    <button
+                        onClick={handleRemove}
+                        className="flex items-center gap-1 px-4 py-1.5 bg-red-50 border border-red-300 text-red-500 text-xs font-semibold rounded-full hover:bg-red-100 transition-colors"
+                    >
+                        <MdDeleteOutline className="text-sm" /> Remove
+                    </button>
                 </div>
             </div>
         </div>
@@ -79,6 +114,18 @@ const Readlist = () => {
         );
     };
 
+    const handleRemoveFromRead = (bookId) => {
+        const updated = readList.filter(id => id !== bookId);
+        setReadList(updated);
+        localStorage.setItem("readList", JSON.stringify(updated));
+    };
+
+    const handleRemoveFromWish = (bookId) => {
+        const updated = wishList.filter(id => id !== bookId);
+        setWishList(updated);
+        localStorage.setItem("wishList", JSON.stringify(updated));
+    };
+
     const readBooks = sortBooks(allBooks.filter(book => readList.includes(book.bookId)));
     const wishBooks = sortBooks(allBooks.filter(book => wishList.includes(book.bookId)));
 
@@ -97,14 +144,9 @@ const Readlist = () => {
     const handleSort = (order) => {
         setSortOrder(order);
         setDropdownOpen(false);
-
-        if (order === "desc") {
-            showToast("Sorted: High → Low rating", "success");
-        } else if (order === "asc") {
-            showToast("Sorted: Low → High rating", "success");
-        } else {
-            showToast("Sort cleared", "info");
-        }
+        if (order === "desc") showToast("Sorted: High → Low rating", "success");
+        else if (order === "asc") showToast("Sorted: Low → High rating", "success");
+        else showToast("Sort cleared", "info");
     };
 
     return (
@@ -170,7 +212,7 @@ const Readlist = () => {
                     ) : (
                         <div className="flex flex-col gap-4">
                             {readBooks.map(book => (
-                                <BookListCard key={book.bookId} book={book} />
+                                <BookListCard key={book.bookId} book={book} onRemove={handleRemoveFromRead} />
                             ))}
                         </div>
                     )}
@@ -182,7 +224,7 @@ const Readlist = () => {
                     ) : (
                         <div className="flex flex-col gap-4">
                             {wishBooks.map(book => (
-                                <BookListCard key={book.bookId} book={book} />
+                                <BookListCard key={book.bookId} book={book} onRemove={handleRemoveFromWish} />
                             ))}
                         </div>
                     )}
