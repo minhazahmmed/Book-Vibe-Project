@@ -5,11 +5,15 @@ import Home from "../pages/Home/Home";
 import About from "../pages/About/About";
 import BookDetails from "../pages/BookDetails/BookDetails";
 import Readlist from "../pages/Readlist/Readlist";
+import ScrollToTop from "../components/ScrollToTop";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: Roots,
+    element: <>
+      <ScrollToTop /> 
+      <Roots/>
+    </>,
     errorElement: <ErrorPage/>,
     children: [
         {
